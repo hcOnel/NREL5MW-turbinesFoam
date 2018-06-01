@@ -1,0 +1,440 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  3.0.x                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      fvOptions;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+
+turbine1
+{
+    type            axialFlowTurbineALSource;
+    active          on;
+
+    axialFlowTurbineALSourceCoeffs
+    {
+        fieldNames          (U);
+        selectionMode       cellSet; // cellSet || points || cellZone
+        cellSet             turbine1;
+        origin              (0 0 0);
+        axis                (1 0 0);
+        verticalDirection   (0 0 1);
+        freeStreamVelocity  (11.4 0 0);
+        tipSpeedRatio       7.0;
+        rotorRadius         63.0;
+
+        dynamicStall
+        {
+            active          off;
+            dynamicStallModel LeishmanBeddoes;
+        }
+
+        endEffects
+        {
+            active          off;
+            endEffectsModel Shen;
+            GlauertCoeffs
+            {
+                tipEffects  on;
+                rootEffects on;
+            }
+            ShenCoeffs
+            {
+                tipEffects  on;
+                rootEffects on;
+                c1          0.125;
+                c2          21;
+            }
+        }
+
+        blades
+        {
+            blade1
+            {
+                writePerf   true;
+                writeElementPerf true;
+                nElements   17;
+                elementProfiles
+                (
+// original
+					circular050
+					circular035
+					DU99W405LM
+					DU99W350LM
+					DU99W350LM
+					DU97W300LM
+					DU91W2250LM
+					DU91W2250LM
+					DU93W210LM
+					DU93W210LM
+					NACA64618
+					NACA64618
+					NACA64618
+					NACA64618
+					NACA64618
+					NACA64618
+					NACA64618
+                );
+                elementData
+                ( // axialDistance, radius, azimuth, chord, chordMount, pitch
+				(	0	1.5		0	3.2		0.25	13.08	)	//1
+				(	0	6.965	0	4.0085	0.25	13.08	)
+				(	0	10.04	0	4.3585	0.25	13.08	)
+				(	0	13.8	0	4.601	0.25	12.28	)
+				(	0	17.9	0	4.555	0.25	10.82	)
+				(	0	22	    0	4.3535	0.25	9.5855	)
+				(	0	26.1	0	4.128	0.25	8.403	)
+				(	0	30.2	0	3.8775	0.25	7.1695	)
+				(	0	34.3	0	3.625	0.25	5.9525	)
+				(	0	38.4	0	3.379	0.25	4.7745	)	//10
+				(	0	42.5	0	3.133	0.25	3.6565	)
+				(	0	46.6	0	2.887	0.25	2.722	)
+				(	0	50.7	0	2.641	0.25	1.9225	)
+				(	0	54.46	0	2.4155	0.25	1.1945	)
+				(	0	57.535	0	2.1995	0.25	0.6165	)
+				(	0	60.265	0	1.743	0.25	0.265	)
+				(	0	62.315	0	1.05	0.25	0.08	)
+				(	0	63	    0	0.7	    0.25	0	    )	//18
+                );
+            }
+            blade2
+            {
+                $blade1;
+                writePerf   false;
+                writeElementPerf false;
+                azimuthalOffset 120.0;
+            }
+            blade3
+            {
+                $blade2;
+                azimuthalOffset 240.0;
+            }
+        }
+
+        tower
+        {
+            includeInTotalDrag  false; // default is false
+            nElements   6;
+            elementProfiles (cylinder);
+            elementData
+            ( // axial distance (turbine axis), height, diameter
+                (10.0 -90.0 4.50)
+                (10.0  0.00 3.50)
+            );
+        }
+
+        hub
+        {
+            nElements   1;
+            elementProfiles (cylinder);
+            elementData
+            ( // axial distance, height, diameter
+                (0  1.5 3)
+                (0 -1.5 3)
+            );
+        }
+
+        profileData
+        {
+
+			// profile names : DU99W405LM DU99W350LM DU97W300LM DU91W2250LM DU93W210LM NACA64618 circular050 circular035 cylinder
+ 
+            DU99W405LM
+            {
+                tableType   multiRe; // singleRe (default) || multiRe
+                Re          1e6; // For tableType = singleRe
+                data // For tableType = singleRe
+                (   // alpha C_l C_d
+                    #include "foilData.v01/DU99W405LM"
+                );
+                ReList // For tableType = multiRe
+                (
+                    #include "../matlabOutput/DU99W405LM_multiRe_Re.dat"
+                );
+                clData // For tableType = multiRe
+                (
+                    #include "../matlabOutput/DU99W405LM_multiRe_cl.dat"
+                );
+                cdData // For tableType = multiRe
+                (
+                    #include "../matlabOutput/DU99W405LM_multiRe_cd.dat"
+                );
+            }
+ 
+            DU99W350LM
+            {
+                tableType   multiRe; // singleRe (default) || multiRe
+                Re          1e6; // For tableType = singleRe
+                data // For tableType = singleRe
+                (   // alpha C_l C_d
+                    #include "foilData.v01/DU99W350LM"
+                );
+                ReList // For tableType = multiRe
+                (
+                    #include "../matlabOutput/DU99W350LM_multiRe_Re.dat"
+                );
+                clData // For tableType = multiRe
+                (
+                    #include "../matlabOutput/DU99W350LM_multiRe_cl.dat"
+                );
+                cdData // For tableType = multiRe
+                (
+                    #include "../matlabOutput/DU99W350LM_multiRe_cd.dat"
+                );
+            }
+ 
+            DU97W300LM
+            {
+                tableType   multiRe; // singleRe (default) || multiRe
+                Re          1e6; // For tableType = singleRe
+                data // For tableType = singleRe
+                (   // alpha C_l C_d
+                    #include "foilData.v01/DU97W300LM"
+                );
+                ReList // For tableType = multiRe
+                (
+                    #include "../matlabOutput/DU97W300LM_multiRe_Re.dat"
+                );
+                clData // For tableType = multiRe
+                (
+                    #include "../matlabOutput/DU97W300LM_multiRe_cl.dat"
+                );
+                cdData // For tableType = multiRe
+                (
+                    #include "../matlabOutput/DU97W300LM_multiRe_cd.dat"
+                );
+            }
+ 
+            DU91W2250LM
+            {
+                tableType   multiRe; // singleRe (default) || multiRe
+                Re          1e6; // For tableType = singleRe
+                data // For tableType = singleRe
+                (   // alpha C_l C_d
+                    #include "foilData.v01/DU91W2250LM"
+                );
+                ReList // For tableType = multiRe
+                (
+                    #include "../matlabOutput/DU91W2250LM_multiRe_Re.dat"
+                );
+                clData // For tableType = multiRe
+                (
+                    #include "../matlabOutput/DU91W2250LM_multiRe_cl.dat"
+                );
+                cdData // For tableType = multiRe
+                (
+                    #include "../matlabOutput/DU91W2250LM_multiRe_cd.dat"
+                );
+            }
+ 
+            DU93W210LM
+            {
+                tableType   multiRe; // singleRe (default) || multiRe
+                Re          1e6; // For tableType = singleRe
+                data // For tableType = singleRe
+                (   // alpha C_l C_d
+                    #include "foilData.v01/DU93W210LM"
+                );
+                ReList // For tableType = multiRe
+                (
+                    #include "../matlabOutput/DU93W210LM_multiRe_Re.dat"
+                );
+                clData // For tableType = multiRe
+                (
+                    #include "../matlabOutput/DU93W210LM_multiRe_cl.dat"
+                );
+                cdData // For tableType = multiRe
+                (
+                    #include "../matlabOutput/DU93W210LM_multiRe_cd.dat"
+                );
+            }
+ 
+            NACA64618
+            {
+                tableType   multiRe; // singleRe (default) || multiRe
+                Re          1e6; // For tableType = singleRe
+                data // For tableType = singleRe
+                (   // alpha C_l C_d
+                    #include "foilData.v01/NACA64618"
+                );
+                ReList // For tableType = multiRe
+                (
+                    #include "../matlabOutput/NACA64618_multiRe_Re.dat"
+                );
+                clData // For tableType = multiRe
+                (
+                    #include "../matlabOutput/NACA64618_multiRe_cl.dat"
+                );
+                cdData // For tableType = multiRe
+                (
+                    #include "../matlabOutput/NACA64618_multiRe_cd.dat"
+                );
+            }
+
+//////////////////////////////////////////
+
+            circular050
+            {
+                data ((-180 0 .50)(180 0 .50));
+            }
+            circular035
+            {
+                data ((-180 0 .35)(180 0 .35));
+            }
+            cylinder
+            {
+                data ((-180 0 1.1)(180 0 1.1));
+            }
+        }
+    }
+}
+
+/*
+turbine2
+{
+    type            axialFlowTurbineALSource;
+    active          on;
+
+    axialFlowTurbineALSourceCoeffs
+    {
+        fieldNames          (U);
+        selectionMode       cellSet; // cellSet || points || cellZone
+        cellSet             turbine2;
+        origin              (2.682 0 0); // 2.682
+        axis                (-1 0 0);
+        verticalDirection   (0 0 1);
+        freeStreamVelocity  (10 0 0);
+        tipSpeedRatio       4.0;
+        rotorRadius         0.447;
+
+        dynamicStall
+        {
+            $....turbine1.axialFlowTurbineALSourceCoeffs.dynamicStall
+        }
+
+        endEffects
+        {
+            $....turbine1.axialFlowTurbineALSourceCoeffs.endEffects
+        }
+
+        blades
+        {
+            blade1
+            {
+                writePerf   true;
+                writeElementPerf true;
+                nElements   28;
+                elementProfiles
+                (
+                    cylinder
+                    S826
+                    S826
+                    S826
+                    S826
+                    S826
+                    S826
+                    S826
+                    S826
+                    S826
+                    S826
+                    S826
+                    S826
+                    S826
+                );
+                elementData
+                ( // axialDistance, radius, azimuth, chord, chordMount, pitch
+                    (0.0 0.012 0.0 0.0135 0.25 0.0)
+                    (0.0 0.0535 0.0 0.0135 0.25 0.0)
+                    (0.0 0.0595 0.0 0.0495 0.25 38.0)
+                    (0.0 0.072 0.0 0.081433 0.25 37.055)
+                    (0.0 0.087 0.0 0.080111 0.25 32.544)
+                    (0.0 0.102 0.0 0.077012 0.25 28.677)
+                    (0.0 0.117 0.0 0.073126 0.25 25.262)
+                    (0.0 0.132 0.0 0.069008 0.25 22.43)
+                    (0.0 0.147 0.0 0.064952 0.25 19.988)
+                    (0.0 0.162 0.0 0.061102 0.25 18.034)
+                    (0.0 0.177 0.0 0.05752 0.25 16.349)
+                    (0.0 0.192 0.0 0.054223 0.25 14.663)
+                    (0.0 0.207 0.0 0.051204 0.25 13.067)
+                    (0.0 0.222 0.0 0.048447 0.25 11.829)
+                    (0.0 0.237 0.0 0.045931 0.25 10.753)
+                    (0.0 0.252 0.0 0.043632 0.25 9.8177)
+                    (0.0 0.267 0.0 0.041529 0.25 8.8827)
+                    (0.0 0.282 0.0 0.039601 0.25 7.9877)
+                    (0.0 0.297 0.0 0.037831 0.25 7.2527)
+                    (0.0 0.312 0.0 0.036201 0.25 6.565)
+                    (0.0 0.327 0.0 0.034697 0.25 5.9187)
+                    (0.0 0.342 0.0 0.033306 0.25 5.3045)
+                    (0.0 0.357 0.0 0.032017 0.25 4.7185)
+                    (0.0 0.372 0.0 0.030819 0.25 4.1316)
+                    (0.0 0.387 0.0 0.029704 0.25 3.5439)
+                    (0.0 0.402 0.0 0.028664 0.25 2.9433)
+                    (0.0 0.417 0.0 0.027691 0.25 2.2185)
+                    (0.0 0.432 0.0 0.02678 0.25 1.097)
+                    (0.0 0.447 0.0 0.025926 0.25 -0.71674)
+                );
+            }
+            blade2
+            {
+                $blade1;
+                writePerf   false;
+                writeElementPerf false;
+                azimuthalOffset 120.0;
+            }
+            blade3
+            {
+                $blade2;
+                azimuthalOffset 240.0;
+            }
+        }
+
+        tower
+        {
+            includeInTotalDrag  false; // default is false
+            nElements   6;
+            elementProfiles (cylinder);
+            elementData
+            ( // axial distance (turbine axis), height, diameter
+                (-0.14 -0.82 0.09)
+                (-0.14 -0.66 0.08)
+                (-0.14 -0.42 0.06)
+                (-0.14  0.00 0.05)
+            );
+        }
+
+        hub
+        {
+            nElements   1;
+            elementProfiles (cylinder);
+            elementData
+            ( // axial distance, height, diameter
+                (0 0.09 0.09)
+                (0 -0.09 0.09)
+            );
+        }
+
+        profileData
+        {
+            S826
+            {
+                data (#include "S826_8e4_Chivaee");
+            }
+            cylinder
+            {
+                data ((-180 0 1.1)(180 0 1.1));
+            }
+        }
+    }
+}
+*/
+// ************************************************************************* //
