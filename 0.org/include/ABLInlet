@@ -9,7 +9,7 @@
 inlet
 {
     type                 atmBoundaryLayerInletVelocity;
-    Uref                 8.0;
+    Uref                 11.4;
     Zref                 0.5;
     zDir                 (0 0 1);
     flowDir              (1 0 0);
