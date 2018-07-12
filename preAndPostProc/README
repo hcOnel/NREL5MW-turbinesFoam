@@ -1,0 +1,19 @@
+Pre-processing scripts:
+	bladeGeomConverter.m
+		takes bladeGeom.txt and bladeProfiles.txt.
+			bladeGeom.txt: geometric data at the airfoil sections along blade, in form of qblade output:
+			Radial Position [m]          Chord Length [m]               Twist [deg]     Pitch Axis Offset [m]  Thread Axis in [% chord]              Airfoil Name            360 Polar Name
+			bladeProfiles.txt: airfoil names at given sections, line by line
+		generates fvOptionsBladeGeomInput.dat.
+			ready to copy-paste into fvOptions file for turbinesFoam. qblade data includes beginning-end section info, this scripts converts this into element-center data by interpolation.
+	multiRePolarConverter.m
+		script to convert batch-analyzed qblade multi-reynolds cl cd data into turbinesFoam usable profile files.
+		takes qBladePolarOutput/*
+			this directory includes cl cd data of airfoils for various reynolds numbers. qblade output format should be aerodyn (nrel).
+		generates convertedClCdData/*
+			these files are compatible with turbinesFoam multiRe entry method.
+
+Post-processing scripts:
+	postProc.m
+		takes postProcessing directory obtained by turbinesFoam (copy-paste into this directory), rotorBEMsimulation_noTipLoss directory (results of qblade).
+		generates results along blade span and compares.
