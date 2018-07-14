@@ -178,9 +178,9 @@ for i=1:length(time)
 		z(j) = bladeElementData{i,j}(5);
 		relVel(j) = bladeElementData{i,j}(6);
 		reynolds(j) = bladeElementData{i,j}(7);
-		fx(j) = bladeElementData{i,j}(12)*rho;
-		fy(j) = bladeElementData{i,j}(13)*rho;
-		fz(j) = bladeElementData{i,j}(14)*rho;
+		fx(j) = bladeElementData{i,j}(12) /spanElement(j);
+		fy(j) = bladeElementData{i,j}(13) /spanElement(j);
+		fz(j) = bladeElementData{i,j}(14) /spanElement(j);
 		liftCoeff(j) = bladeElementData{i,j}(10);
 		dragCoeff(j) = bladeElementData{i,j}(11);
 		fNormalMagnitude(j) = dot([fy(j) fz(j)],bladeNormalUnitVector); % component of the local force in the normal direction
@@ -190,12 +190,12 @@ for i=1:length(time)
 		aoaGeom(j) = bladeElementData{i,j}(9);
 		relVel(j) = bladeElementData{i,j}(6);
 		
-			%calculate forces manually
-			fLiftElement(j) = 0.5*rho*relVel(j)^2*liftCoeff(j)*chordElement(j)*spanElement(j);
-			fDragElement(j) = 0.5*rho*relVel(j)^2*dragCoeff(j)*chordElement(j)*spanElement(j);
-			axis2liftAngle =  (aoa(j)+pitchElement(j))*pi/180 ;
-			fAxialElement = fLiftElement*cos(axis2liftAngle) + fDragElement*sin(axis2liftAngle);
-			fNormalElement = fLiftElement*sin(axis2liftAngle) - fDragElement*cos(axis2liftAngle);
+			%%calculate forces manually
+			%fLiftElement(j) = 0.5*rho*relVel(j)^2*liftCoeff(j)*chordElement(j)*spanElement(j);
+			%fDragElement(j) = 0.5*rho*relVel(j)^2*dragCoeff(j)*chordElement(j)*spanElement(j);
+			%axis2liftAngle =  (aoa(j)+pitchElement(j))*pi/180 ;
+			%fAxialElement = fLiftElement*cos(axis2liftAngle) + fDragElement*sin(axis2liftAngle);
+			%fNormalElement = fLiftElement*sin(axis2liftAngle) - fDragElement*cos(axis2liftAngle);
 		
 	end
 	figure(1, 'position',[1 1 1200 700]);
@@ -210,13 +210,13 @@ for i=1:length(time)
 	plot(qBladeNormalForce(:,1),qBladeNormalForce(:,2),"b.");
 	plot(qBladeAxialForce(:,1),qBladeAxialForce(:,2),"r.");
 	
-	plot(radialPosition,fNormalElement,"b--");
-	plot(radialPosition,fAxialElement,"r--");
+	%plot(radialPosition,fNormalElement,"b--");
+	%plot(radialPosition,fAxialElement,"r--");
 	
 	%plot(radialPosition,fNormalMagnitude2,"kx");
 	hold off;
-	title(["Axial and Normal Force Distro, time = " num2str(instant)]);
-	legend("Fn","Fa","QBlade Fn","QBlade Fa","FnCalc","FaCalc",...
+	title(["Axial and Normal Force Distro per length, time = " num2str(instant)]);
+	legend("Fn","Fa","QBlade Fn","QBlade Fa",...
 	'location','northwest');
 	xlabel("Radial position [m]");
 	
