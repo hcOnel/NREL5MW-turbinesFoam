@@ -17,3 +17,27 @@ Post-processing scripts:
 	postProc.m
 		takes postProcessing directory obtained by turbinesFoam (copy-paste into this directory), rotorBEMsimulation_noTipLoss directory (results of qblade).
 		generates results along blade span and compares.
+
+Blade Sectioning:
+	Sample 4 section QBlade geometry, where AF: airfoil, S: section, E: element
+	
+	QBlade input:
+	|<								BLADE SPAN								>|
+	S1			|			S2			|			S3			|			S4
+	AF1			|			AF2			|			AF3			|			AF4
+	
+	Equivalent turbinesFoam input (refinement level 1):
+	S1			S2						S3						S4			S5
+		  E1				E2						E3				  E4	
+		  AF1				AF2						AF3				  AF4	
+		  
+	Equivalent turbinesFoam input (refinement level 2):
+	S1	 S2		S3			S4			S5			S6			S7	  S8	S9
+	  E1	E2		  E3		  E4		  E5		  E6		E7	 E8	
+	  AF1	AF1		  AF2		  AF2		  AF3		  AF3		AF4	 AF4
+	
+	Equivalent turbinesFoam input (refinement level 3):
+	S1	S2	S3	S4		S5		S6		S7		S8		S9		S10	S11	S12	S13
+	  E1  E2  E3	E4		E5		E6		E7		E8		E9	  E10 E11 E12 
+	  AF1 AF1 AF1	AF2		AF2		AF2		AF3		AF3		AF3	  AF4 AF4 AF4
+	
