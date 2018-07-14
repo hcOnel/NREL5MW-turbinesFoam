@@ -12,6 +12,12 @@ rotationDirection = 1; % CW: 1, CCW: -1 (faced from upwind side, according to X 
 	%IMPORTANT: blade visualization is seen from the downwind side!
 TSR = 7;
 rho = 1.225; % air density, kg/m^3
+velInf = 11.4; % free stream velocity, m/s
+nBlades = 3;
+
+rotorCircumference = 2*pi*rotorRadius; % m
+tipSpeed = TSR*velInf; % m/s
+rotorSpeed = 2*pi*tipSpeed/rotorCircumference; % rad/s
 
 turbinesFoamCaseDir = "postProcessing/";
 turbinesSubdir= [turbinesFoamCaseDir "turbines/0.8/"];
@@ -84,7 +90,12 @@ turbineDataTemp = turbineDataTemp2.data;
 %	[1,12] = ct_blade3
 
 time=turbineDataTemp(:,1);
+nTime = length(time);
 rotorAngle = turbineDataTemp(:,2)*pi/180*rotationDirection;
+cpTurbine = turbineDataTemp(:,4);
+ctTurbine = turbineDataTemp(:,5);
+
+clear turbineDataTemp2 turbineDataTemp
 
 %% BLADES -----------------------------
 
@@ -96,7 +107,7 @@ elementsList=dir([elementsSubdir "*.csv"]); % get file names
 elementsList=struct2cell(elementsList);
 elementsList=elementsList(1,:)'; % get file names only as strings
 nElements = length(elementsList) % get number of files
-bladeElementData = cell(length(time),nElements); % initialize cell that will store everything
+bladeElementData = cell(nTime,nElements); % initialize cell that will store everything
 
 for i=1:nElements
 	loc_ = strfind(elementsList{i},'.'); % get locations of deliminators
@@ -104,7 +115,7 @@ for i=1:nElements
 	elementNumber = str2num(elementNumber)+1; % since it starts from 0
 	elementDataTemp2 = importdata([elementsSubdir elementsList{i}],',',1);
 	elementDataTemp = elementDataTemp2.data;
-	for j=1:length(time)
+	for j=1:nTime
 		bladeElementData{j,elementNumber}=elementDataTemp(j,:);
 	end
 end
@@ -143,7 +154,11 @@ fNormalVectorX = zeros(1,nElements);
 fNormalVectorY = zeros(1,nElements);
 endEffectFactor = zeros(1,nElements);
 
-% --- For manual force calculation
+% --- For manual calculations
+windPower = 0.5*rho*(pi*rotorRadius^2)*velInf^3;
+windForce = 0.5*rho*(pi*rotorRadius^2)*velInf^2;
+manCalcCp = zeros(nTime,1);
+manCalcCt = zeros(nTime,1);
 fvOptionsSectionData = load('fvOptionsBladeGeomInput.dat');
 chordElement = fvOptionsSectionData(:,4);
 pitchElement = fvOptionsSectionData(:,6);
@@ -151,14 +166,15 @@ spanElement = zeros(1,nElements);
 for i=1:nElements
 	spanElement(i)=fvOptionsSectionData(i+1,2)-fvOptionsSectionData(i,2);
 end
-fLiftElement = zeros(1,nElements);
-fDragElement = zeros(1,nElements);
-fAxialElement = zeros(1,nElements);
-fNormalElement = zeros(1,nElements);
+%fLiftElement = zeros(1,nElements);
+%fDragElement = zeros(1,nElements);
+%fAxialElement = zeros(1,nElements);
+%fNormalElement = zeros(1,nElements);
 
-% --- For manual force calculation
+bladePlotSwitch = 0;
+turbinePlotSwitch = 1;
 
-for i=1:length(time)
+for i=1:nTime
 	instant=time(i);
 	% create the unit vector of blade direction, add 90 degrees since 
 	% the positive vertical is assumed zero degrees in turbinesFoam
@@ -169,6 +185,9 @@ for i=1:length(time)
 	[unitNormalX unitNormalY] = pol2cart(instantNormalAngle,1);
 	bladeUnitVector = [unitX unitY];
 	bladeNormalUnitVector = [unitNormalX unitNormalY];
+	manCalcTorque = 0;
+	manCalcThrust = 0;
+
 	for j=1:nElements
 
 		% check table for index of what to plot before!
@@ -197,112 +216,154 @@ for i=1:length(time)
 			%fAxialElement = fLiftElement*cos(axis2liftAngle) + fDragElement*sin(axis2liftAngle);
 			%fNormalElement = fLiftElement*sin(axis2liftAngle) - fDragElement*cos(axis2liftAngle);
 		
+		manCalcTorque = manCalcTorque + fNormalMagnitude(j)*spanElement(j)*radialPosition(j);
+		manCalcThrust = manCalcThrust + fx(j)*spanElement(j);
 	end
-	figure(1, 'position',[1 1 1200 700]);
-	figureSize = [2,3]; figNum = 0;
 	
-	figNum=figNum+1;
-	subplot(figureSize(1),figureSize(2),figNum); % axial and normal forces
-	plot(radialPosition,fNormalMagnitude,"b-");
-	hold on;
-	plot(radialPosition,fx,"r-");
-	% qBlade results
-	plot(qBladeNormalForce(:,1),qBladeNormalForce(:,2),"b.");
-	plot(qBladeAxialForce(:,1),qBladeAxialForce(:,2),"r.");
+	manCalcPower = manCalcTorque*rotorSpeed*nBlades;
+	manCalcCp(i) = manCalcPower / windPower;
+	manCalcCt(i) = manCalcThrust*nBlades / windForce;
 	
-	%plot(radialPosition,fNormalElement,"b--");
-	%plot(radialPosition,fAxialElement,"r--");
+	if bladePlotSwitch == 1
+		
+		figure(1, 'position',[1 1 1200 700]);
+		figureSize = [2,3]; figNum = 0;
+		
+		figNum=figNum+1;
+		subplot(figureSize(1),figureSize(2),figNum); % normal force
+		plot(radialPosition,fNormalMagnitude,"b-");
+		hold on;
+		% qBlade results
+		plot(qBladeNormalForce(:,1),qBladeNormalForce(:,2),"b.");
+		%	minnak guş gaffası little birdy head
+		hold off;
+		title(["Normal Force Distro per length, time = " num2str(instant)]);
+		legend("Fn","QBlade Fn",'location','northwest');
+		xlabel("Radial position [m]");
+		
+		figNum=figNum+1;
+		subplot(figureSize(1),figureSize(2),figNum); % axial force
+		plot(radialPosition,fx,"r-");
+		hold on;
+		% qBlade results
+		plot(qBladeAxialForce(:,1),qBladeAxialForce(:,2),"r.");
+		hold off;
+		title(["Axial Force Distro per length, time = " num2str(instant)]);
+		legend("Fa","QBlade Fa",'location','northwest');
+		xlabel("Radial position [m]");
+		
+		figNum=figNum+1;
+		subplot(figureSize(1),figureSize(2),figNum); % angle of attack
+		plot(radialPosition,aoa,"b-");
+		hold on;
+		plot(radialPosition,aoaGeom,"r-");
+		% qBlade results
+		plot(qBladeAoA(:,1),qBladeAoA(:,2),"b.");
+		hold off;
+		title(["Angle of Attack, time = " num2str(instant)]);
+		legend("AoA","AoA Geom","QBlade Alpha")
+		xlabel("Radial position [m]");
+		
+		figNum=figNum+1;
+		subplot(figureSize(1),figureSize(2),figNum); % reynolds
+		plot(radialPosition,reynolds,"b-");
+		hold on;
+		% qBlade results
+		plot(qBladeRe(:,1),qBladeRe(:,2),"b.");
+		hold off;
+		title(["Reynolds Local, time = " num2str(instant)]);
+		legend("Re","QBlade Re",'location','northwest')
+		xlabel("Radial position [m]");
+		
+		figNum=figNum+1;
+		subplot(figureSize(1),figureSize(2),figNum); % relative velocity
+		plot(radialPosition,relVel,"b-");
+		hold on;
+		% qBlade results
+		plot(qBladeVloc(:,1),qBladeVloc(:,2),"b.");
+		hold off;
+		title(["Local velocity, time = " num2str(instant)]);
+		legend("Vloc","QBlade Vloc",'location','northwest');
+		xlabel("Radial position [m]");
+		
+		figNum=figNum+1;
+		subplot(figureSize(1),figureSize(2),figNum); % cl cd
+		plot(radialPosition,liftCoeff,"b-");
+		hold on;
+		plot(radialPosition,dragCoeff,"r-");
+		% qBlade results
+		plot(qBladeCl(:,1),qBladeCl(:,2),"b.");
+		plot(qBladeCd(:,1),qBladeCd(:,2),"r.");
+		%plot(radialPosition,fNormalMagnitude2,"kx");
+		hold off;
+		title(["Cl Cd, time = " num2str(instant)]);
+		legend("Cl","Cd","QBlade Cl","QBlade Cd")
+		xlabel("Radial position [m]");
+		
+		%figure(10, 'position',[1 1 500 500]);
+		%plot(y,z,'ro');
+		%hold on;
+		%%quiverScale=0.001;
+		%%quiver(y,z,fy,fz);
+		%quiver(y,z,fNormalVectorX ,fNormalVectorY );
+		%quiver(0,0,unitX*rotorRadius,unitY*rotorRadius,'k','AutoScale','off');
+		%quiver(0,0,unitNormalX*rotorRadius/2,unitNormalY*rotorRadius/2,'c','AutoScale','on');
+		%hold off;
+		%xlim([-rotorRadius rotorRadius])
+		%ylim([-rotorRadius rotorRadius])
+		%title(["2D blade visualization, time = " num2str(instant)]);
+		%legend("Blade element centers","Local normal force");
+		%xlabel("Radial position [m]");
+		%grid on;
+		 
+		%% plot on blades visually (3D)
+		%figure(2);
+		%plot3(x,y,z,'-o');
+		%hold on;
+		%for k=1:nElements
+			%t = linspace(0,2*pi,100);
+			%zCirc = radialPosition(k)*cos(t);
+			%yCirc = radialPosition(k)*sin(t);
+			%xCirc = 0*t;
+			%plot3(xCirc,yCirc,zCirc,'k-');
+		%end
+		%%quiver3(x,y,z,fx,fy,fz);
+		%hold off;
+		%xlim([-rotorRadius rotorRadius])
+		%ylim([-rotorRadius rotorRadius])
+		%zlim([-rotorRadius rotorRadius])
+		%title(["time = " num2str(instant)]);
+	end
 	
-	%plot(radialPosition,fNormalMagnitude2,"kx");
-	hold off;
-	title(["Axial and Normal Force Distro per length, time = " num2str(instant)]);
-	legend("Fn","Fa","QBlade Fn","QBlade Fa",...
-	'location','northwest');
-	xlabel("Radial position [m]");
-	
-	figNum=figNum+1;
-	subplot(figureSize(1),figureSize(2),figNum); % angle of attack
-	plot(radialPosition,aoa,"b-");
-	hold on;
-	plot(radialPosition,aoaGeom,"r-");
-	% qBlade results
-	plot(qBladeAoA(:,1),qBladeAoA(:,2),"b.");
-	hold off;
-	title(["Angle of Attack, time = " num2str(instant)]);
-	legend("AoA","AoA Geom","QBlade Alpha")
-	xlabel("Radial position [m]");
-	
-	figNum=figNum+1;
-	subplot(figureSize(1),figureSize(2),figNum); % reynolds
-	plot(radialPosition,reynolds,"b-");
-	hold on;
-	% qBlade results
-	plot(qBladeRe(:,1),qBladeRe(:,2),"b.");
-	hold off;
-	title(["Reynolds Local, time = " num2str(instant)]);
-	legend("Re","QBlade Re")
-	xlabel("Radial position [m]");
-	
-	figNum=figNum+1;
-	subplot(figureSize(1),figureSize(2),figNum); % relative velocity
-	plot(radialPosition,relVel,"b-");
-	hold on;
-	% qBlade results
-	plot(qBladeVloc(:,1),qBladeVloc(:,2),"b.");
-	hold off;
-	title(["Local velocity, time = " num2str(instant)]);
-	legend("Vloc","QBlade Vloc")
-	xlabel("Radial position [m]");
-	
-	figNum=figNum+1;
-	subplot(figureSize(1),figureSize(2),figNum); % cl cd
-	plot(radialPosition,liftCoeff,"b-");
-	hold on;
-	plot(radialPosition,dragCoeff,"r-");
-	% qBlade results
-	plot(qBladeCl(:,1),qBladeCl(:,2),"b.");
-	plot(qBladeCd(:,1),qBladeCd(:,2),"r.");
-	%plot(radialPosition,fNormalMagnitude2,"kx");
-	hold off;
-	title(["Cl Cd, time = " num2str(instant)]);
-	legend("Cl","Cd","QBlade Cl","QBlade Cd")
-	xlabel("Radial position [m]");
-	
-	%figure(10, 'position',[1 1 500 500]);
-	%plot(y,z,'ro');
-	%hold on;
-	%%quiverScale=0.001;
-	%%quiver(y,z,fy,fz);
-	%quiver(y,z,fNormalVectorX ,fNormalVectorY );
-	%quiver(0,0,unitX*rotorRadius,unitY*rotorRadius,'k','AutoScale','off');
-	%quiver(0,0,unitNormalX*rotorRadius/2,unitNormalY*rotorRadius/2,'c','AutoScale','on');
-	%hold off;
-	%xlim([-rotorRadius rotorRadius])
-	%ylim([-rotorRadius rotorRadius])
-	%title(["2D blade visualization, time = " num2str(instant)]);
-	%legend("Blade element centers","Local normal force");
-	%xlabel("Radial position [m]");
-	%grid on;
-	 
-	%% plot on blades visually (3D)
-	%figure(2);
-	%plot3(x,y,z,'-o');
-	%hold on;
-	%for k=1:nElements
-		%t = linspace(0,2*pi,100);
-		%zCirc = radialPosition(k)*cos(t);
-		%yCirc = radialPosition(k)*sin(t);
-		%xCirc = 0*t;
-		%plot3(xCirc,yCirc,zCirc,'k-');
-	%end
-	%%quiver3(x,y,z,fx,fy,fz);
-	%hold off;
-	%xlim([-rotorRadius rotorRadius])
-	%ylim([-rotorRadius rotorRadius])
-	%zlim([-rotorRadius rotorRadius])
-	%title(["time = " num2str(instant)]);
+	if turbinePlotSwitch == 1
 
-	pause(0.5);
+		figure(2, 'position',[1 1 1200 700]);
+		figureSize = [1,2]; figNum = 0;
+		
+		figNum=figNum+1;
+		subplot(figureSize(1),figureSize(2),figNum); % power curve
+		plot(time,cpTurbine);
+		hold on;
+		% qBlade results
+		plot(time,manCalcCp,'r');
+		hold off;
+		title(["Power coefficient Cp, time = " num2str(instant)]);
+		legend("Cp","Manual Cp")
+		xlabel("Time step [s]");
+		
+		figNum=figNum+1;
+		subplot(figureSize(1),figureSize(2),figNum); % thrust curve
+		plot(time,ctTurbine);
+		hold on;
+		% qBlade results
+		plot(time,manCalcCt,'r');
+		hold off;
+		title(["Thrust coefficient Cp, time = " num2str(instant)]);
+		legend("Ct","Manual Ct")
+		xlabel("Time step [s]");
+
+	end
+	pause(0.0);
 end
 
 
