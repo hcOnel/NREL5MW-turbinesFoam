@@ -171,8 +171,8 @@ end
 %fAxialElement = zeros(1,nElements);
 %fNormalElement = zeros(1,nElements);
 
-bladePlotSwitch = 0;
-turbinePlotSwitch = 1;
+bladePlotSwitch = 1;
+turbinePlotSwitch = 0;
 
 for i=1:nTime
 	instant=time(i);
@@ -197,14 +197,17 @@ for i=1:nTime
 		z(j) = bladeElementData{i,j}(5);
 		relVel(j) = bladeElementData{i,j}(6);
 		reynolds(j) = bladeElementData{i,j}(7);
-		fx(j) = bladeElementData{i,j}(12) /spanElement(j);
-		fy(j) = bladeElementData{i,j}(13) /spanElement(j);
-		fz(j) = bladeElementData{i,j}(14) /spanElement(j);
+		fx(j) = bladeElementData{i,j}(12);
+		fy(j) = bladeElementData{i,j}(13);
+		fz(j) = bladeElementData{i,j}(14);
+		fxPerSpan(j) = fx(j)/spanElement(j);
+		fyPerSpan(j) = fy(j)/spanElement(j);
+		fzPerSpan(j) = fz(j)/spanElement(j);
 		liftCoeff(j) = bladeElementData{i,j}(10);
 		dragCoeff(j) = bladeElementData{i,j}(11);
-		fNormalMagnitude(j) = dot([fy(j) fz(j)],bladeNormalUnitVector); % component of the local force in the normal direction
+		fNormalMagnitude(j) = dot([fyPerSpan(j) fzPerSpan(j)],bladeNormalUnitVector); % component of the local force in the normal direction
 		[fNormalVectorX(j) fNormalVectorY(j)] = pol2cart(instantNormalAngle,fNormalMagnitude(j));
-		%fNormalMagnitude2(j)=norm([fy(j) fz(j)]);
+		%fNormalMagnitude2(j)=norm([fyPerSpan(j) fzPerSpan(j)]);
 		aoa(j) = bladeElementData{i,j}(8);
 		aoaGeom(j) = bladeElementData{i,j}(9);
 		relVel(j) = bladeElementData{i,j}(6);
@@ -217,7 +220,7 @@ for i=1:nTime
 			%fNormalElement = fLiftElement*sin(axis2liftAngle) - fDragElement*cos(axis2liftAngle);
 		
 		manCalcTorque = manCalcTorque + fNormalMagnitude(j)*spanElement(j)*radialPosition(j);
-		manCalcThrust = manCalcThrust + fx(j)*spanElement(j);
+		manCalcThrust = manCalcThrust + fxPerSpan(j)*spanElement(j);
 	end
 	
 	manCalcPower = manCalcTorque*rotorSpeed*nBlades;
@@ -243,7 +246,7 @@ for i=1:nTime
 		
 		figNum=figNum+1;
 		subplot(figureSize(1),figureSize(2),figNum); % axial force
-		plot(radialPosition,fx,"r-");
+		plot(radialPosition,fxPerSpan,"r-");
 		hold on;
 		% qBlade results
 		plot(qBladeAxialForce(:,1),qBladeAxialForce(:,2),"r.");
@@ -304,7 +307,7 @@ for i=1:nTime
 		%plot(y,z,'ro');
 		%hold on;
 		%%quiverScale=0.001;
-		%%quiver(y,z,fy,fz);
+		%%quiver(y,z,fyPerSpan,fzPerSpan);
 		%quiver(y,z,fNormalVectorX ,fNormalVectorY );
 		%quiver(0,0,unitX*rotorRadius,unitY*rotorRadius,'k','AutoScale','off');
 		%quiver(0,0,unitNormalX*rotorRadius/2,unitNormalY*rotorRadius/2,'c','AutoScale','on');
@@ -327,7 +330,7 @@ for i=1:nTime
 			%xCirc = 0*t;
 			%plot3(xCirc,yCirc,zCirc,'k-');
 		%end
-		%%quiver3(x,y,z,fx,fy,fz);
+		%%quiver3(x,y,z,fxPerSpan,fyPerSpan,fzPerSpan);
 		%hold off;
 		%xlim([-rotorRadius rotorRadius])
 		%ylim([-rotorRadius rotorRadius])
