@@ -1,0 +1,25 @@
+A test case to validate turbinesFoam library by simulating the NREL-5MW turbine. Cases are intended to be identical to SOWFA. Turbine data obtained from SOWFA.
+
+turbinesFoam: https://github.com/turbinesFoam/turbinesFoam
+SOWFA's NREL-5MW case: https://github.com/NREL/SOWFA/tree/master/exampleCases/example.ALM
+
+Rotor radius = 63m
+
+case_isolated:
+	An isolated rotor, free from boundary effects.
+	No ABL, no wall functions, slip BC at farfield.
+	Fixed inlet velocity.
+	No tower, no hub, no nacelle introduced.
+	* Rotation is CCW due to endEffects bug -> to be fixed
+	U_inf = 11.4 m/s, TSR = 7
+	Domain extends: (D is rotor diameter)
+		x: -10D to 30D
+		y: -10D to 10D
+		z: -10D to 10D
+	Farfield cell size = 84m
+	Rotor region cell size = 2.625m
+	dt = 0.02s
+	nCells per rotor radius = 24
+	Rotor revolution per timeStep = 1.451deg
+	Blade tip travels per cell size per time step = 0.614
+	

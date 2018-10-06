@@ -1,0 +1,186 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  3.0.x                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      fvOptions;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+
+turbine
+{
+    type            axialFlowTurbineALSource;
+    active          on;
+
+    axialFlowTurbineALSourceCoeffs
+    {
+        fieldNames          (U);
+        selectionMode       cellSet; // cellSet || points || cellZone
+        cellSet             turbine;
+        origin              (0 0 0);
+        axis                (1 0 0);
+        verticalDirection   (0 0 1);
+        freeStreamVelocity  (11.4 0 0);
+        tipSpeedRatio       7.0;
+        rotorRadius         63.0;
+
+        dynamicStall
+        {
+            active          off;
+            dynamicStallModel LeishmanBeddoes;
+        }
+
+        endEffects
+        {
+            active          off;
+            endEffectsModel Glauert; // Glauert || Shen || liftingLine
+            GlauertCoeffs
+            {
+                tipEffects  on;
+                rootEffects on;
+            }
+            ShenCoeffs
+            {
+                c1          0.125;
+                c2          21;
+                tipEffects  on;
+                rootEffects on;
+            }
+        }
+
+        blades
+        {
+            blade1
+            {
+                writePerf   true;
+                writeElementPerf true;
+                nElements   16;
+                elementProfiles
+                (
+					 cylinder1
+					 cylinder1
+					 cylinder2
+					 DU40_A17
+					 DU35_A17
+					 DU35_A17
+					 DU30_A17
+					 DU25_A17
+					 DU25_A17
+					 DU21_A17
+					 DU21_A17
+					 NACA64_A17
+					 NACA64_A17
+					 NACA64_A17
+					 NACA64_A17
+					 NACA64_A17
+					 NACA64_A17
+                 );
+                elementData
+                (
+				  // axialDis radius  azimuth chord chordMount pitch
+					(0.0      2.8667  0.0     3.542 0.25       13.308 )  
+					(0.0      5.6     0.0     3.854 0.25       13.308 )  
+					(0.0      8.3333  0.0     4.167 0.25       13.308 )  
+					(0.0      11.75   0.0     4.557 0.25       13.308 )  
+					(0.0      15.85   0.0     4.652 0.25       11.48  )  
+					(0.0      19.95   0.0     4.458 0.25       10.162 )  
+					(0.0      24.05   0.0     4.249 0.25       9.011  )  
+					(0.0      28.15   0.0     4.007 0.25       7.795  )  
+					(0.0      32.25   0.0     3.748 0.25       6.544  )  
+					(0.0      36.35   0.0     3.502 0.25       5.361  )  
+					(0.0      40.45   0.0     3.256 0.25       4.188  )  
+					(0.0      44.55   0.0     3.01  0.25       3.125  )  
+					(0.0      48.65   0.0     2.764 0.25       2.319  )  
+					(0.0      52.75   0.0     2.518 0.25       1.526  )  
+					(0.0      56.1667 0.0     2.313 0.25       0.863  )  
+					(0.0      58.9    0.0     2.086 0.25       0.37   )  
+					(0.0      61.6333 0.0     1.419 0.25       0.106  )  
+                );
+            }
+            blade2
+            {
+                $blade1;
+                writePerf   false;
+                writeElementPerf false;
+                azimuthalOffset 120.0;
+            }
+            blade3
+            {
+                $blade2;
+                azimuthalOffset 240.0;
+            }
+        }
+
+        tower
+        {
+			active off;
+            includeInTotalDrag  false; // default is false
+            nElements   1;
+            elementProfiles (cylinder);
+            elementData
+            ( // axial distance (turbine axis), height, diameter
+                (10.0 -90.0 4.50)
+                (10.0  0.00 3.50)
+            );
+        }
+
+        hub
+        {
+			active off;
+            nElements   1;
+            elementProfiles (cylinder);
+            elementData
+            ( // axial distance, height, diameter
+                (0  2 4)
+                (0 -2 4)
+            );
+        }
+
+        profileData
+        {
+            cylinder1
+            {
+                data ((-180 0 0.5)(180 0 0.5));
+            }
+            cylinder2
+            {
+                data ((-180 0 0.35)(180 0 0.35));
+            }
+            DU40_A17
+            {
+                data (#include "../../resources/foilData/DU40_A17");
+            }
+            DU35_A17
+            {
+                data (#include "../../resources/foilData/DU35_A17");
+            }
+            DU30_A17
+            {
+                data (#include "../../resources/foilData/DU30_A17");
+            }
+            DU25_A17
+            {
+                data (#include "../../resources/foilData/DU25_A17");
+            }
+            DU21_A17
+            {
+                data (#include "../../resources/foilData/DU21_A17");
+            }
+            NACA64_A17
+            {
+                data (#include "../../resources/foilData/NACA64_A17");
+            }
+        }
+    }
+}
+
+// ************************************************************************* //
