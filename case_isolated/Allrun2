@@ -9,8 +9,6 @@
 #PBS -l walltime=48:00:00
 #PBS -l nodes=1:ppn=64
 #PBS -N nrel5mw
-##PBS -m e
-##PBS -M canon@metu.edu.tr
 
 # standard error output merge to the standard output file.
 #PBS -j oe
