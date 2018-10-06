@@ -1,4 +1,4 @@
-A test case to validate turbinesFoam library by simulating the NREL-5MW turbine. Cases are intended to be identical to SOWFA. Turbine data obtained from SOWFA.
+A test repository to validate turbinesFoam library by simulating the NREL-5MW turbine. Cases are intended to be identical to SOWFA. Turbine data obtained from SOWFA.
 
 turbinesFoam: https://github.com/turbinesFoam/turbinesFoam
 SOWFA's NREL-5MW case: https://github.com/NREL/SOWFA/tree/master/exampleCases/example.ALM
