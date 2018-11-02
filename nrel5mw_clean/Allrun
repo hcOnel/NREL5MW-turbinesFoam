@@ -1,0 +1,72 @@
+#!/bin/bash
+
+########################################################
+## Edit&submit this file using  "qsub pbs_openmpi.cmd" #
+## Check your job with          "qstat"                #
+## Kill your job with           "qrm" or "qdel"        #
+########################################################
+
+#PBS -l walltime=48:00:00
+#PBS -l nodes=1:ppn=32
+#PBS -N nrel5mw-11.4-7-xf
+##PBS -m e
+##PBS -M canon@metu.edu.tr
+
+# standard error output merge to the standard output file.
+#PBS -j oe
+# Specify the file name for the standard output/error 
+#PBS -o log.qsub
+
+source /student/16/honel/.bashrc
+
+########################################################
+cd /cfd/honel/OpenFOAM/honel-5.x/nrel5mw-11.4-7-xf
+########################################################
+
+. $WM_PROJECT_DIR/bin/tools/RunFunctions
+touch result.OpenFOAM
+
+# nProc=
+
+# Copy initial conditions
+cp -rf 0.org/ 0/
+cp -f system/fvOptions-11.4-7-xf system/fvOptions
+
+###################### PUT TIME LABEL ######################
+t0_date=$(date); t0_sec=$(date +%s.%N);
+echo "Preprocessing started at" $t0_date
+############################################################
+
+runApplication blockMesh
+runApplication decomposePar -copyZero
+runParallel snappyHexMesh -overwrite
+runParallel topoSet
+
+###################### PUT TIME LABEL ######################
+t1_date=$(date); t1_sec=$(date +%s.%N);
+echo "Preprocessing done at" $t1_date
+t_diff=$(echo "$t1_sec - $t0_sec" | bc)
+echo "Preprocessing took "$t_diff" seconds"
+echo "Solution started at" $t1_date
+############################################################
+
+runParallel $(getApplication)
+
+###################### PUT TIME LABEL ######################
+t2_date=$(date); t2_sec=$(date +%s.%N);
+echo "Solution done at" $t2_date
+t_diff=$(echo "$t2_sec - $t1_sec" | bc)
+echo "Solution took "$t_diff" seconds"
+############################################################
+
+runApplication reconstructParMesh -constant
+runApplication reconstructPar -latestTime
+
+
+echo '### DONE ###'
+
+
+
+
+
+

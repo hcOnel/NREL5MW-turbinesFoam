@@ -1,0 +1,232 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  3.0.x                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      fvOptions;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+
+turbine1
+{
+    type            axialFlowTurbineALSource;
+    active          on;
+
+    axialFlowTurbineALSourceCoeffs
+    {
+        fieldNames          (U);
+        selectionMode       cellSet; // cellSet || points || cellZone
+        cellSet             turbine;
+        origin              (0 0 0);
+        axis                (-1 0 0);
+        verticalDirection   (0 0 1);
+        freeStreamVelocity  (11.4 0 0);
+        tipSpeedRatio       7.0;
+        rotorRadius         63.0;
+
+        dynamicStall
+        {
+            active          off;
+            dynamicStallModel LeishmanBeddoes;
+        }
+
+        endEffects
+        {
+            active          on;
+            endEffectsModel Glauert; // Glauert || Shen || liftingLine
+            GlauertCoeffs
+            {
+                tipEffects  on;
+                rootEffects on;
+            }
+            ShenCoeffs
+            {
+                c1          0.125;
+                c2          21;
+                tipEffects  on;
+                rootEffects on;
+            }
+        }
+
+        blades
+        {
+            blade1
+            {
+                writePerf   true;
+                writeElementPerf true;
+                nElements   19;
+                elementProfiles
+                (	
+					 cylinder1
+					 cylinder1
+					 cylinder1
+					 cylinder2
+					 DU40_A17
+					 DU35_A17
+					 DU35_A17
+					 DU30_A17
+					 DU25_A17
+					 DU25_A17
+					 DU21_A17
+					 DU21_A17
+					 NACA64_A17
+					 NACA64_A17
+					 NACA64_A17
+					 NACA64_A17
+					 NACA64_A17
+					 NACA64_A17
+					 NACA64_A17
+
+					//SOWFA DATA cylinder1
+					//SOWFA DATA cylinder1
+					//SOWFA DATA cylinder2
+					//SOWFA DATA DU40_A17
+					//SOWFA DATA DU35_A17
+					//SOWFA DATA DU35_A17
+					//SOWFA DATA DU30_A17
+					//SOWFA DATA DU25_A17
+					//SOWFA DATA DU25_A17
+					//SOWFA DATA DU21_A17
+					//SOWFA DATA DU21_A17
+					//SOWFA DATA NACA64_A17
+					//SOWFA DATA NACA64_A17
+					//SOWFA DATA NACA64_A17
+					//SOWFA DATA NACA64_A17
+					//SOWFA DATA NACA64_A17
+					//SOWFA DATA NACA64_A17
+
+                 );
+                elementData
+                (
+				  // axialDis radius  azimuth chord chordMount pitch
+				( 0.000000e+00 1.500000e+00 0.000000e+00 3.200000e+00 5.000000e-01 -1.308000e+01 )
+				( 0.000000e+00 2.180000e+00 0.000000e+00 3.392566e+00 4.858097e-01 -1.308000e+01 )
+				( 0.000000e+00 4.230000e+00 0.000000e+00 3.711456e+00 4.655488e-01 -1.308000e+01 )
+				( 0.000000e+00 6.965000e+00 0.000000e+00 4.008676e+00 4.495671e-01 -1.308000e+01 )
+				( 0.000000e+00 1.004000e+01 0.000000e+00 4.389530e+00 4.322519e-01 -1.308000e+01 )
+				( 0.000000e+00 1.380000e+01 0.000000e+00 4.622273e+00 4.230750e-01 -1.246082e+01 )
+				( 0.000000e+00 1.790000e+01 0.000000e+00 4.580153e+00 4.246667e-01 -1.079275e+01 )
+				( 0.000000e+00 2.200000e+01 0.000000e+00 4.356384e+00 4.336385e-01 -9.579622e+00 )
+				( 0.000000e+00 2.610000e+01 0.000000e+00 4.131240e+00 4.436465e-01 -8.409463e+00 )
+				( 0.000000e+00 3.020000e+01 0.000000e+00 3.877765e+00 4.563044e-01 -7.167350e+00 )
+				( 0.000000e+00 3.430000e+01 0.000000e+00 3.624208e+00 4.707379e-01 -5.947741e+00 )
+				( 0.000000e+00 3.840000e+01 0.000000e+00 3.379000e+00 4.867564e-01 -4.766664e+00 )
+				( 0.000000e+00 4.250000e+01 0.000000e+00 3.133000e+00 5.053463e-01 -3.631692e+00 )
+				( 0.000000e+00 4.660000e+01 0.000000e+00 2.887000e+00 5.271043e-01 -2.707327e+00 )
+				( 0.000000e+00 5.070000e+01 0.000000e+00 2.640985e+00 5.529173e-01 -1.921811e+00 )
+				( 0.000000e+00 5.446000e+01 0.000000e+00 2.419826e+00 5.806023e-01 -1.191549e+00 )
+				( 0.000000e+00 5.753500e+01 0.000000e+00 2.218222e+00 6.106491e-01 -5.895922e-01 )
+				( 0.000000e+00 6.026500e+01 0.000000e+00 1.819822e+00 6.896035e-01 -2.605720e-01 )
+				( 0.000000e+00 6.231500e+01 0.000000e+00 1.092409e+00 9.823264e-01 -8.602728e-02 )
+				( 0.000000e+00 6.300000e+01 0.000000e+00 7.000000e-01 1.392857e+00  0.000000e+00 )
+
+				// SOWFA DATA (0.0      2.8667  0.0     3.542 0.25       13.308 )  
+				// SOWFA DATA (0.0      5.6     0.0     3.854 0.25       13.308 )  
+				// SOWFA DATA (0.0      8.3333  0.0     4.167 0.25       13.308 )  
+				// SOWFA DATA (0.0      11.75   0.0     4.557 0.25       13.308 )  
+				// SOWFA DATA (0.0      15.85   0.0     4.652 0.25       11.48  )  
+				// SOWFA DATA (0.0      19.95   0.0     4.458 0.25       10.162 )  
+				// SOWFA DATA (0.0      24.05   0.0     4.249 0.25       9.011  )  
+				// SOWFA DATA (0.0      28.15   0.0     4.007 0.25       7.795  )  
+				// SOWFA DATA (0.0      32.25   0.0     3.748 0.25       6.544  )  
+				// SOWFA DATA (0.0      36.35   0.0     3.502 0.25       5.361  )  
+				// SOWFA DATA (0.0      40.45   0.0     3.256 0.25       4.188  )  
+				// SOWFA DATA (0.0      44.55   0.0     3.01  0.25       3.125  )  
+				// SOWFA DATA (0.0      48.65   0.0     2.764 0.25       2.319  )  
+				// SOWFA DATA (0.0      52.75   0.0     2.518 0.25       1.526  )  
+				// SOWFA DATA (0.0      56.1667 0.0     2.313 0.25       0.863  )  
+				// SOWFA DATA (0.0      58.9    0.0     2.086 0.25       0.37   )  
+				// SOWFA DATA (0.0      61.6333 0.0     1.419 0.25       0.106  )  
+                );
+            }
+            blade2
+            {
+                $blade1;
+                writePerf   true;
+                writeElementPerf true;
+                azimuthalOffset 120.0;
+            }
+            blade3
+            {
+                $blade2;
+                azimuthalOffset 240.0;
+            }
+        }
+
+     //   tower
+     //   {
+     //       active off; // not sure if this works
+     //       includeInTotalDrag  false; // default is false
+     //       nElements   1;
+     //       elementProfiles (cylinder);
+     //       elementData
+     //       ( // axial distance (turbine axis), height, diameter
+     //           (10.0 -90.0 4.50)
+     //           (10.0  0.00 3.50)
+     //       );
+     //   }
+     //
+     //   hub
+     //   {
+     //       active off; // not sure if this works
+     //       nElements   1;
+     //       elementProfiles (cylinder);
+     //       elementData
+     //       ( // axial distance, height, diameter
+     //           (0  2 4)
+     //           (0 -2 4)
+     //       );
+     //   }
+
+        profileData
+        {
+            cylinder
+            {
+                data ((-180 0 1.1)(180 0 1.1));
+            }
+            cylinder1
+            {
+                data ((-180 0 0.5)(180 0 0.5));
+            }
+            cylinder2
+            {
+                data ((-180 0 0.35)(180 0 0.35));
+            }
+            DU40_A17
+            {
+                data (#include "../../resources/foilData/DU40_A17");
+            }
+            DU35_A17
+            {
+                data (#include "../../resources/foilData/DU35_A17");
+            }
+            DU30_A17
+            {
+                data (#include "../../resources/foilData/DU30_A17");
+            }
+            DU25_A17
+            {
+                data (#include "../../resources/foilData/DU25_A17");
+            }
+            DU21_A17
+            {
+                data (#include "../../resources/foilData/DU21_A17");
+            }
+            NACA64_A17
+            {
+                data (#include "../../resources/foilData/NACA64_A17");
+            }
+        }
+    }
+}
+
+// ************************************************************************* //
